@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>dc.js - Pie Chart Example</title>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" type="text/css" href="public/lib/dcjs/web/css/dc.css"/>
+		<link rel="stylesheet" type="text/css" href="styles/main.css"/>
+
+
+    <script type="text/javascript" src="app/lodash.js"></script>
+
+
+    	<script type="text/javascript" src="https://rawgithub.com/mbostock/d3/master/d3.js"></script>
+
+      <script type="text/javascript" src="https://rawgithub.com/NickQiZhu/dc.js/master/web/js/crossfilter.js"></script>
+
+    	<script type="text/javascript" src="https://rawgithub.com/dc-js/dc.js/develop/dc.js"></script>
+
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.15/angular.js"></script>
+    <script type="text/javascript" src="app/angular-dc.js"></script>
+		<script type="text/javascript" src="app/angular-local-storage.min.js"></script>
+
+
+
+</head>
+<body ng-app="app">
+<!-- we nicely separate the view and the data. Here, all information concerning the way to display the data
+is in the template -->
+
+	<div ng-controller="testController">
+		<div my-dashboard></div>
+	</div>
+
+
+
+<script type="text/javascript">
+    var app = angular.module("app", ["angularDc","LocalStorageModule"]);
+
+
+		app.controller('testController', ['$scope','$http','localStorageService', function($scope, $http, localStorageService) {
+			$scope.init = function() {
+				debugger;
+				//localStorageService.set('test', '[{"ga":{"gaId":"ga:36850191","startDate":"60daysAgo","endDate":"yesterday","metrics":["ga:pageviews","ga:visitors","ga:bounces"],"dimensions":"ga:date"},"chart":{"chartType":"pieChart","chartGroup":"groupOne","width":"780","height":"480","innerRadius":"100","dimension":"dimension","group":"group","renderArea":true,"transitionDuration":"1000","margins":"{top: 30, right: 50, bottom: 25, left: 40}","stack":"bounces","mouseZoomable":"true","x":"d3.time.scale().domain([minDateReal, maxDateReal])","round":"d3.time.month.round","xUnits":"d3.time.months","elasticY":"true","renderHorizontalGridLines":"true","legend":"dc.legend().x(800).y(10).itemHeight(13).gap(5)","brushOn":"false","class":"dc-chart","displayDimension":"4","displayMetric":"1"}}]');
+			}
+
+      $scope.buildCharts = function(data, additionalChart) {
+
+					var dataReal = data.data.rows;
+					var ndxReal = crossfilter(dataReal);
+					var parseDateReal = d3.time.format("%Y%m%d").parse;
+
+					dataReal.forEach(function(d) {
+            if(typeof(d[0]) === "string") {
+						    d[0] = parseDateReal(d[0]);
+            } else {
+              console.log("Already a date");
+            }
+					})
+
+
+					dataReal.forEach(function(d) {
+							var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+									d[4]=monthNames[d[0].getMonth()];
+									console.log(d[4])
+					});
+debugger;
+          $scope.dimension = ndxReal.dimension(function(d) {return d[parseInt(data.config.data.chart.displayDimension)]})
+          $scope.group=$scope.dimension.group().reduceSum(function(d) {return d[parseInt(data.config.data.chart.displayMetric)];});
+
+          //This is stack information and should somehow be classified into a display attribute
+          $scope.pureDate = ndxReal.dimension(function(d) {return d[0];})
+          $scope.bounces=$scope.pureDate.group().reduceSum(function(d) {return d[3];});
+
+
+
+          $scope.minDateReal = $scope.pureDate.bottom(1)[0][0];
+					$scope.maxDateReal = $scope.pureDate.top(1)[0][0];
+
+          if(typeof(additionalChart) !== "undefined") {
+            $scope.savedCharts.push(additionalChart);
+          } else {
+            $scope.savedCharts = JSON.parse(localStorageService.get('test'));
+          }
+
+          $scope.displayChart = false;
+          $scope.exposeForm = false;
+
+					/*$scope.pureDate = ndxReal.dimension(function(d) {return d[0];})
+					$scope.year  = ndxReal.dimension(function(d) {return d[4];});
+
+					$scope.hits = $scope.pureDate.group().reduceSum(dc.pluck([1]));
+
+					$scope.year_total = $scope.year.group().reduceSum(function(d) {return d[1];});*/
+
+      }
+
+
+			$scope.createExisting = function() {
+
+				$scope.savedCharts = JSON.parse(localStorageService.get('test'));
+        debugger;
+
+        if($scope.savedCharts !== null) {
+          for(var i = 0; i < $scope.savedCharts.length; i++) {
+
+  					$http.post('/data',$scope.savedCharts[i])
+  						.then(function(response) {
+  							console.log(response);
+                $scope.buildCharts(response);
+  						})
+  				}
+        } else {
+            console.log("No existing charts");
+            localStorageService.set('test', '[]');
+
+        }
+
+			}
+
+				$scope.init();
+
+				$scope.exposeNewForm = function() {
+					$scope.exposeForm = true;
+				}
+
+				$scope.addNewComponent = function(newChartVal) {
+          debugger;
+					$scope.newComponent = JSON.parse('{"ga":{"gaId": "' + newChartVal.client +'", "startDate" : "60daysAgo", "endDate" : "yesterday", "metrics" : ["' + newChartVal.metrics +'"], "dimensions" : "' + newChartVal.dimensions + '"}, "chart":{"chartType": "' + newChartVal.type + '" , "chartGroup" : "groupTwo", "width" : "780", "height" : "480", "innerRadius" : "100", "dimension" : "dimension", "group" : "group", "renderArea" : true, "transitionDuration" : "1000", "margins" : "{top: 30, right: 50, bottom: 25, left: 40}", "stack" : "bounces", "mouseZoomable" : "true", "x" : "d3.time.scale().domain([minDateReal, maxDateReal])", "round" : "d3.time.month.round", "xUnits" : "d3.time.months", "elasticY" : "true", "renderHorizontalGridLines" : "true", "legend" : "dc.legend().x(800).y(10).itemHeight(13).gap(5)", "brushOn" : "false", "class" : "dc-chart"}}');
+
+					//var testComp = JSON.parse('{"ga":{"gaId": "' + newChartVal.client +'", "startDate" : "60daysAgo", "endDate" : "yesterday", "metrics" : ["' + newChartVal.metrics +'"], "dimensions" : "' + newChartVal.dimensions + '"}}');
+						$http.post('/data',$scope.newComponent)
+							.then(function(response) {
+
+                $scope.moreConfig = response.config.data;
+                $scope.newData = response;
+
+
+                $scope.displayMetric = [];
+                $scope.displayDimension = [];
+
+                for(var i = 0; i < response.data.columnHeaders.length; i++) {
+
+                    if(response.data.columnHeaders[i].columnType ==="DIMENSION") {
+                      $scope.displayDimension.push({"name":response.data.columnHeaders[i].name, "position" : i})
+                    } else {
+                      $scope.displayMetric.push({"name":response.data.columnHeaders[i].name, "position" : i})
+                    }
+                }
+                /* This block maps metrics and dimensions based on the columnHeaders position of the response, then saves the position of the loop which will map to the data output */
+                debugger;
+
+
+                $scope.displayChart = true;
+
+
+
+							})
+				}
+
+
+
+        $scope.configureDisplay = function(newChartVal) {
+          debugger;
+
+          $scope.moreConfig.chart.displayMetric = newChartVal.displayGroup;
+          $scope.moreConfig.chart.displayDimension = newChartVal.displayDimension;
+
+          $scope.oldConfig = JSON.parse(localStorageService.get('test'));
+          $scope.oldConfig.push($scope.moreConfig)
+          localStorageService.set('test', JSON.stringify($scope.oldConfig));
+
+
+          //$scope.savedCharts = JSON.parse(localStorageService.get('test'));
+
+          $scope.buildCharts($scope.newData, $scope.moreConfig);
+
+        }
+		}]);
+
+
+
+
+		app.directive('myDashboard', function() {
+		  return {
+		    restrict: 'A',
+		    templateUrl: 'app/dashboard.html'
+		  };
+		});
+
+		app.directive('pieChart', function() {
+			return {
+				restrict: 'A',
+		    templateUrl: 'app/pieChart.html'
+			}
+		})
+
+		app.directive('lineChart', function() {
+			return {
+				restrict: 'A',
+		    templateUrl: 'app/lineChart.html'
+			}
+		})
+
+		app.directive('newGraph', function() {
+			return {
+				restrict: 'A',
+		    templateUrl: 'app/newGraph.html'
+			}
+		})
+
+
+</script>
+</body>
+</html>

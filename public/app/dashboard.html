@@ -1,0 +1,22 @@
+<div data-ng-init="createExisting()">
+  <div ng-repeat="savedChart in savedCharts">
+    <div ng-if="savedChart.chart.chartType == 'pieChart'">
+      <div pie-chart></div>
+    </div>
+
+    <div ng-if="savedChart.chart.chartType == 'lineChart'">
+      <div line-chart></div>
+    </div>
+
+  </div>
+
+  <div>
+    <div ng-click="exposeNewForm()" style="font-size:30px;">
+      +
+    </div>
+    <div ng-if="exposeForm == true">
+      <div new-graph></div>
+    </div>
+  </div>
+
+</div>
