@@ -1,20 +1,32 @@
-<div dc-chart="{{savedChart.chart.chartType}}"
-     dc-chart-group="{{savedChart.chart.chartGroup}}"
-     dc-render-area="{{savedChart.chart.renderArea}}"
-     dc-width="{{savedChart.chart.width}}"
-     dc-height="{{savedChart.chart.height}}"
-     dc-transition-duration="{{savedChart.chart.transitionDuration}}"
-     dc-margins="{{savedChart.chart.margins}}"
-     dc-dimension="{{savedChart.chart.dimension}}"
-     dc-group="{{savedChart.chart.group}}"
-     dc-stack="{{savedChart.chart.stack}}"
-     dc-mouse-zoomable="{{savedChart.chart.mouseZoomable}}"
-     dc-x="{{savedChart.chart.x}}"
-     dc-round="{{savedChart.chart.round}}"
-     dc-x-units="{{savedChart.chart.xUnits}}"
-     dc-elastic-y="{{savedChart.chart.elasticY}}"
-     dc-render-horizontal-grid-lines="{{savedChart.chart.renderHorizontalGridLines}}"
-     dc-legend="{{savedChart.chart.legend}}"
-     dc-brush-on="{{savedChart.chart.brushOn}}"
-     class="{{savedChart.chart.class}}">
+<div class="col-md-4 col-lg-4">
+  <div class="card">
+    <div class="header">
+        <h4 class="title">{{savedChart.chart.name}}</h4>
+        <p class="category">Last Campaign Performance</p>
+    </div>
+    <div class="content">
+      <div dc-chart="{{savedChart.chart.chartType}}"
+           dc-chart-group="{{savedChart.chart.chartGroup}}"
+           dc-render-area="{{savedChart.chart.renderArea}}"
+           dc-width="{{savedChart.chart.width}}"
+           dc-height="{{savedChart.chart.height}}"
+           dc-transition-duration="{{savedChart.chart.transitionDuration}}"
+           dc-margins="{{savedChart.chart.margins}}"
+           dc-dimension="{{savedChart.chart.dimension}}"
+           dc-group="[{{savedChart.chart.group}},'TEST']"
+           dc-stack="[{{savedChart.chart.stack}},'TEST 2']"
+           dc-x="{{savedChart.chart.x}}"
+           dc-round="{{savedChart.chart.round}}"
+           dc-x-units="{{savedChart.chart.xUnits}}"
+           dc-elastic-y="{{savedChart.chart.elasticY}}"
+           dc-y-axis-label="'{{savedChart.chart.yAxisLabel}}'"
+           dc-x-axis-label="'{{savedChart.chart.xAxisLabel}}'"
+           dc-render-horizontal-grid-lines="{{savedChart.chart.renderHorizontalGridLines}}"
+           dc-brush-on="{{savedChart.chart.brushOn}}"
+           dc-legend="dc.legend()"
+           class="{{savedChart.chart.class}}">
+      </div>
+      <!-- Remove TEST and TEST2 seems to fallback to some sort of key maybe -->
+    </div>
+  </div>
 </div>

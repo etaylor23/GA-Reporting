@@ -5,12 +5,11 @@
 
     <br />
 
-    <h2>Client</h2>
-    <select name="type" id="type" ng-model="newChart.client">
-      <option value="ga:36850191">mercatormedia</option>
-      <option value="ga:2624153">martime journal</option>
-      <option value="ga:4968362">the brooke</option>
-    </select>
+    <div ng-controller="accounts" class="container-fluid">
+      <div class="row">
+        <div accounts></div>
+      </div>
+    </div>
 
 
     <br />
@@ -49,7 +48,7 @@
 
       <div>
         <h3>Display Metrics By</h3>
-        <select name="group" id="group" ng-model="newChart.displayGroup">
+        <select name="group" id="group" ng-model="newChart.displayGroup" multiple>
           <option ng-repeat="metric in displayMetric track by $index" value="{{metric.position}}">{{metric.name}}</option>
         </select>
 

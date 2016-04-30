@@ -1,0 +1,25 @@
+<div ng-init="listAccounts()">
+  <h2>Client List</h2>
+  <div ng-repeat="account in accounts">
+
+    <div class="col-md-4 col-lg-4">
+      <div class="card">
+        <div class="header">
+            <h4 class="title">{{account.name}}</h4>
+            <p class="category">Client</p>
+        </div>
+        <div class="content">
+
+
+          <select ng-model="newChart.client" ng-change="displayProfile(account)">
+            <optGroup ng-repeat="webPropertySummary in account.webProperties" label="Property: {{webPropertySummary.name}}">
+              <option ng-repeat="profile in webPropertySummary.profiles" value="ga:{{profile.id}}">Profile: {{profile.name}}<option>
+            </optGroup>
+          </select>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

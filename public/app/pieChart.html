@@ -1,9 +1,19 @@
-<div dc-chart="{{savedChart.chart.chartType}}"
-     dc-chart-group="{{savedChart.chart.chartGroup}}"
-     dc-width="{{savedChart.chart.width}}"
-     dc-height="{{savedChart.chart.height}}"
-     dc-inner-radius="{{savedChart.chart.innerRadius}}"
-     dc-dimension="{{savedChart.chart.dimension}}"
-     dc-group="{{savedChart.chart.group}}"
-     dc-legend="dc.legend()">
+<div class="col-md-4 col-lg-4">
+  <div class="card">
+    <div class="header">
+        <h4 class="title">{{savedChart.chart.name}}</h4>
+        <p class="category">Last Campaign Performance</p>
+    </div>
+    <div class="content">
+      <div dc-chart="{{savedChart.chart.chartType}}"
+           dc-chart-group="{{savedChart.chart.chartGroup}}"
+           dc-width="{{savedChart.chart.width}}"
+           dc-height="{{savedChart.chart.height}}"
+           dc-inner-radius="{{savedChart.chart.innerRadius}}"
+           dc-dimension="{{savedChart.chart.dimension}}"
+           dc-group="{{savedChart.chart.group}}"
+           dc-legend="dc.legend()">
+      </div>
+    </div>
+  </div>
 </div>

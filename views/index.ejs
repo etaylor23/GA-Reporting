@@ -5,30 +5,45 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" type="text/css" href="public/lib/dcjs/web/css/dc.css"/>
 		<link rel="stylesheet" type="text/css" href="styles/main.css"/>
-
+    <link rel="stylesheet" type="text/css" href="styles/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="styles/animate.min.css">
+    <link rel="stylesheet" type="text/css" href="styles/demo.css">
+    <link rel="stylesheet" type="text/css" href="styles/light-bootstrap-dashboard.css">
+    <link rel="stylesheet" type="text/css" href="styles/pe-icon-7-stroke.css">
 
     <script type="text/javascript" src="app/lodash.js"></script>
-
-
-    	<script type="text/javascript" src="https://rawgithub.com/mbostock/d3/master/d3.js"></script>
-
-      <script type="text/javascript" src="https://rawgithub.com/NickQiZhu/dc.js/master/web/js/crossfilter.js"></script>
-
-    	<script type="text/javascript" src="https://rawgithub.com/dc-js/dc.js/develop/dc.js"></script>
-
-        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.15/angular.js"></script>
+  	<script type="text/javascript" src="https://rawgithub.com/mbostock/d3/master/d3.js"></script>
+    <script type="text/javascript" src="https://rawgithub.com/NickQiZhu/dc.js/master/web/js/crossfilter.js"></script>
+  	<script type="text/javascript" src="https://rawgithub.com/dc-js/dc.js/develop/dc.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.2.15/angular.js"></script>
     <script type="text/javascript" src="app/angular-dc.js"></script>
 		<script type="text/javascript" src="app/angular-local-storage.min.js"></script>
-
-
+    <script type="text/javascript" src="js/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="js/bootstrap-checkbox-radio-switch.js"></script>
+    <script type="text/javascript" src="js/bootstrap-notify.js"></script>
+    <script type="text/javascript" src="js/bootstrap-select.js"></script>
+    <script type="text/javascript" src="js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="js/demo.js"></script>
+    <script type="text/javascript" src="js/light-bootstrap-dashboard.js"></script>
 
 </head>
 <body ng-app="app">
 <!-- we nicely separate the view and the data. Here, all information concerning the way to display the data
 is in the template -->
 
-	<div ng-controller="testController">
-		<div my-dashboard></div>
+	<div class="wrapper">
+
+    <div navigation></div>
+
+    <div class="main-panel">
+      <div class="content">
+        <div ng-controller="testController" class="container-fluid">
+          <div class="row">
+            <div my-dashboard></div>
+          </div>
+        </div>
+      </div>
+    </div>
 	</div>
 
 
@@ -36,10 +51,28 @@ is in the template -->
 <script type="text/javascript">
     var app = angular.module("app", ["angularDc","LocalStorageModule"]);
 
+    app.controller('accounts', ['$scope', '$http', function($scope, $http) {
+      $scope.listAccounts = function() {
+        $http.get('/listAccounts',$scope.newComponent)
+          .then(function(response) {
+            console.log(response.data);
+            $scope.accounts = response.data;
+          })
+      }
+
+      $scope.displayProfile = function(account) {
+        console.log("TEST")
+
+      }
+
+
+      //$scope.listAccounts();
+    }])
 
 		app.controller('testController', ['$scope','$http','localStorageService', function($scope, $http, localStorageService) {
 			$scope.init = function() {
 				debugger;
+        $scope.savedCharts = [];
 				//localStorageService.set('test', '[{"ga":{"gaId":"ga:36850191","startDate":"60daysAgo","endDate":"yesterday","metrics":["ga:pageviews","ga:visitors","ga:bounces"],"dimensions":"ga:date"},"chart":{"chartType":"pieChart","chartGroup":"groupOne","width":"780","height":"480","innerRadius":"100","dimension":"dimension","group":"group","renderArea":true,"transitionDuration":"1000","margins":"{top: 30, right: 50, bottom: 25, left: 40}","stack":"bounces","mouseZoomable":"true","x":"d3.time.scale().domain([minDateReal, maxDateReal])","round":"d3.time.month.round","xUnits":"d3.time.months","elasticY":"true","renderHorizontalGridLines":"true","legend":"dc.legend().x(800).y(10).itemHeight(13).gap(5)","brushOn":"false","class":"dc-chart","displayDimension":"4","displayMetric":"1"}}]');
 			}
 
@@ -57,25 +90,27 @@ is in the template -->
             }
 					})
 
-
 					dataReal.forEach(function(d) {
 							var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 									d[4]=monthNames[d[0].getMonth()];
 									console.log(d[4])
 					});
-debugger;
+
           $scope.dimension = ndxReal.dimension(function(d) {return d[parseInt(data.config.data.chart.displayDimension)]})
-          $scope.group=$scope.dimension.group().reduceSum(function(d) {return d[parseInt(data.config.data.chart.displayMetric)];});
+
+          //displayMetric[0] is hard coded the first metric that comes back from GA
+          $scope.group=$scope.dimension.group().reduceSum(function(d) {return d[parseInt(data.config.data.chart.displayMetric[0])];});
 
           //This is stack information and should somehow be classified into a display attribute
           $scope.pureDate = ndxReal.dimension(function(d) {return d[0];})
-          $scope.bounces=$scope.pureDate.group().reduceSum(function(d) {return d[3];});
-
-
+          //Hard coded stack attribute... need to work out a way to make sense of this
+          $scope.stack=$scope.pureDate.group().reduceSum(function(d) {return d[parseInt(data.config.data.chart.displayMetric[1])];});
 
           $scope.minDateReal = $scope.pureDate.bottom(1)[0][0];
 					$scope.maxDateReal = $scope.pureDate.top(1)[0][0];
 
+
+          //additionalChart is actually always true in this new set up so we may not need this condition. It just pushes the new chart config into the savedCharts array
           if(typeof(additionalChart) !== "undefined") {
             $scope.savedCharts.push(additionalChart);
           } else {
@@ -85,96 +120,68 @@ debugger;
           $scope.displayChart = false;
           $scope.exposeForm = false;
 
-					/*$scope.pureDate = ndxReal.dimension(function(d) {return d[0];})
-					$scope.year  = ndxReal.dimension(function(d) {return d[4];});
-
-					$scope.hits = $scope.pureDate.group().reduceSum(dc.pluck([1]));
-
-					$scope.year_total = $scope.year.group().reduceSum(function(d) {return d[1];});*/
-
       }
-
-
-			$scope.createExisting = function() {
-
-				$scope.savedCharts = JSON.parse(localStorageService.get('test'));
-        debugger;
-
-        if($scope.savedCharts !== null) {
-          for(var i = 0; i < $scope.savedCharts.length; i++) {
-
-  					$http.post('/data',$scope.savedCharts[i])
-  						.then(function(response) {
-  							console.log(response);
-                $scope.buildCharts(response);
-  						})
-  				}
-        } else {
-            console.log("No existing charts");
-            localStorageService.set('test', '[]');
-
-        }
-
-			}
-
-				$scope.init();
 
 				$scope.exposeNewForm = function() {
 					$scope.exposeForm = true;
 				}
 
 				$scope.addNewComponent = function(newChartVal) {
-          debugger;
-					$scope.newComponent = JSON.parse('{"ga":{"gaId": "' + newChartVal.client +'", "startDate" : "60daysAgo", "endDate" : "yesterday", "metrics" : ["' + newChartVal.metrics +'"], "dimensions" : "' + newChartVal.dimensions + '"}, "chart":{"chartType": "' + newChartVal.type + '" , "chartGroup" : "groupTwo", "width" : "780", "height" : "480", "innerRadius" : "100", "dimension" : "dimension", "group" : "group", "renderArea" : true, "transitionDuration" : "1000", "margins" : "{top: 30, right: 50, bottom: 25, left: 40}", "stack" : "bounces", "mouseZoomable" : "true", "x" : "d3.time.scale().domain([minDateReal, maxDateReal])", "round" : "d3.time.month.round", "xUnits" : "d3.time.months", "elasticY" : "true", "renderHorizontalGridLines" : "true", "legend" : "dc.legend().x(800).y(10).itemHeight(13).gap(5)", "brushOn" : "false", "class" : "dc-chart"}}');
 
-					//var testComp = JSON.parse('{"ga":{"gaId": "' + newChartVal.client +'", "startDate" : "60daysAgo", "endDate" : "yesterday", "metrics" : ["' + newChartVal.metrics +'"], "dimensions" : "' + newChartVal.dimensions + '"}}');
-						$http.post('/data',$scope.newComponent)
-							.then(function(response) {
+          //creates a new component from the information provided in the form
+					$scope.newComponent = JSON.parse('{"ga":{"gaId": "' + newChartVal.client +'", "startDate" : "60daysAgo", "endDate" : "yesterday", "metrics" : ["' + newChartVal.metrics +'"], "dimensions" : "' + newChartVal.dimensions + '"}, "chart":{"name":"' + newChartVal.name + '","chartType": "' + newChartVal.type + '" , "chartGroup" : "groupTwo", "width" : "450", "height" : "280", "innerRadius" : "50", "dimension" : "dimension", "group" : "group", "renderArea" : true, "transitionDuration" : "1000", "margins" : "{top: 30, right: 50, bottom: 25, left: 40}", "stack" : "stack", "mouseZoomable" : "true", "x" : "d3.time.scale().domain([minDateReal, maxDateReal])", "round" : "d3.time.month.round", "xUnits" : "d3.time.months", "elasticY" : "true", "renderHorizontalGridLines" : "true", "legend" : "dc.legend().x(800).y(10).itemHeight(13).gap(5)", "brushOn" : "false", "class" : "dc-chart"}}');
 
-                $scope.moreConfig = response.config.data;
-                $scope.newData = response;
+          //hits endpoint with fully configured object... waiting for response... (this request should be moved to a factory/service soon)
+					$http.post('/data',$scope.newComponent)
+						.then(function(response) {
 
+              //gets the initial config set which is an object that contains ga and chart configuration
+              $scope.moreConfig = response.config.data;
+              //gets the response data
+              $scope.newData = response;
 
-                $scope.displayMetric = [];
-                $scope.displayDimension = [];
+              //sets up two empty arrays to filter through metrics and dimensions returned from the ga api
+              $scope.displayMetric = [];
+              $scope.displayDimension = [];
 
-                for(var i = 0; i < response.data.columnHeaders.length; i++) {
+              //looks through the response column headers and pushes them into display dropdowns on the front end. Essentially it uses the response to generate display options
+              for(var i = 0; i < response.data.columnHeaders.length; i++) {
+                  if(response.data.columnHeaders[i].columnType ==="DIMENSION") {
+                    $scope.displayDimension.push({"name":response.data.columnHeaders[i].name, "position" : i})
+                  } else {
+                    $scope.displayMetric.push({"name":response.data.columnHeaders[i].name, "position" : i})
+                  }
+              }
 
-                    if(response.data.columnHeaders[i].columnType ==="DIMENSION") {
-                      $scope.displayDimension.push({"name":response.data.columnHeaders[i].name, "position" : i})
-                    } else {
-                      $scope.displayMetric.push({"name":response.data.columnHeaders[i].name, "position" : i})
-                    }
-                }
-                /* This block maps metrics and dimensions based on the columnHeaders position of the response, then saves the position of the loop which will map to the data output */
-                debugger;
-
-
-                $scope.displayChart = true;
-
-
-
-							})
+              $scope.displayChart = true;
+						})
 				}
 
-
-
         $scope.configureDisplay = function(newChartVal) {
-          debugger;
-
+          //configures the display dropdown
           $scope.moreConfig.chart.displayMetric = newChartVal.displayGroup;
           $scope.moreConfig.chart.displayDimension = newChartVal.displayDimension;
 
-          $scope.oldConfig = JSON.parse(localStorageService.get('test'));
-          $scope.oldConfig.push($scope.moreConfig)
-          localStorageService.set('test', JSON.stringify($scope.oldConfig));
+          var displayGroupLabel = "";
+          //below doesnt label the correct way
+          for(var i = 0; i < newChartVal.displayGroup.length; i++) {
+            console.log(newChartVal.metrics[i])
+            debugger;
+            if(i == newChartVal.displayGroup.length-1) {
+              displayGroupLabel += newChartVal.metrics[i];
+            } else {
+              displayGroupLabel += newChartVal.metrics[i] + " Vs ";
+            }
+          }
 
-
-          //$scope.savedCharts = JSON.parse(localStorageService.get('test'));
-
+          $scope.moreConfig.chart.yAxisLabel = "Y AXIS LABEL";
+          $scope.moreConfig.chart.xAxisLabel = displayGroupLabel;
           $scope.buildCharts($scope.newData, $scope.moreConfig);
-
         }
+
+
+        $scope.init();
+
 		}]);
 
 
@@ -184,6 +191,13 @@ debugger;
 		  return {
 		    restrict: 'A',
 		    templateUrl: 'app/dashboard.html'
+		  };
+		});
+
+    app.directive('navigation', function() {
+		  return {
+		    restrict: 'A',
+		    templateUrl: 'app/navigation.html'
 		  };
 		});
 
@@ -207,6 +221,13 @@ debugger;
 		    templateUrl: 'app/newGraph.html'
 			}
 		})
+
+    app.directive('accounts', function() {
+      return {
+        restrict: 'A',
+        templateUrl: 'app/listAccounts.html'
+      }
+    })
 
 
 </script>

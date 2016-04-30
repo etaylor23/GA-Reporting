@@ -39,6 +39,55 @@ app.get('/', function (req, res) {
 	    // User to impersonate (leave empty if no impersonation needed)
 	    null);
 
+app.get('/listColumns', function( req, res) {
+    analytics.metadata.columns.list({
+      'reportType': 'ga'
+    }, function(err, body) {
+      if (err) {
+        return console.log(err);
+      } else {
+        var columnSummary = body.items;
+
+        console.log(JSON.stringify(body.items));
+
+        res.setHeader('Content-Type', 'application/json');
+		    res.send(JSON.stringify(columnSummary));        }
+
+    })
+    //BOOOOOOOOOOOOOOM
+})
+
+
+app.get('/listAccounts', function (req, res) {
+
+  authClient.authorize(function(err, tokens) {
+		if (err) {
+			console.log(err);
+			return;
+		}
+      console.log("--------------\n" )
+	  	console.log(tokens);
+      console.log("\n--------------" )
+
+
+      analytics.management.accountSummaries.list({
+        auth: authClient
+      }, function(err, body) {
+        if (err) {
+          return console.log(err);
+        } else {
+          var accountSummary = body.items;
+
+          console.log(JSON.stringify(body.items));
+
+          res.setHeader('Content-Type', 'application/json');
+  		    res.send(JSON.stringify(accountSummary));        }
+
+      })
+
+
+    });
+});
 
 app.post('/data', function (req, res) {
 
