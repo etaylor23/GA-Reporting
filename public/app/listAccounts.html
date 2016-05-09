@@ -1,25 +1,44 @@
 <div ng-init="listAccounts()">
-  <h2>Client List</h2>
-  <div ng-repeat="account in accounts">
+  <div class="col-md-12">
+    <div class="form-group">
 
-    <div class="col-md-4 col-lg-4">
-      <div class="card">
-        <div class="header">
-            <h4 class="title">{{account.name}}</h4>
-            <p class="category">Client</p>
+        <label>Client</label>
+
+        <div ng-if="query && overlayOff == false" class="overlay"></div>
+
+
+
+        <div class="accounts overOverlay">
+          <input class="form-control" type="text" ng-keyup="overlayOff = false" ng-model="query" placeholder="Start typing..." />
+          <ul ng-if="query && overlayOff == false">
+            <li class="col-md-4" ng-repeat="account in accounts | filter:query">
+              <p ng-click="toggleWebPropertyList()">
+                <span class="client upper">Client</span>
+                {{account.name}}
+              </p>
+              <ul>
+                <li ng-repeat="webPropertySummary in account.webProperties">
+                  <p>
+                    <span class="property upper">Property</span>
+                    {{webPropertySummary.name}}
+                  </p>
+                  <ul>
+                    <li ng-repeat="profile in webPropertySummary.profiles">
+                      <p class="profile-container" ng-model="newChart.client" ng-click="$parent.$parent.$parent.$parent.$parent.newChart.client = 'ga:'+profile.id; setProfile(profile.name)">
+                        <span class="profile upper">Profile</span>
+                        <span class="profile-name">{{profile.name}}</span>
+                        <span class="fa fa-thumbs-up"></span>
+                      </p>
+                      <!-- This goes up shit loads of levels to get to the right scope for newgraph -->
+                      <!-- <input ng-model="newChart.client" type="text"> dont need this any more, ngclick above goes to correct level -->
+                      <!-- This input doesnt actually need ot be here but for testing-->
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </li>
+          </ul>
         </div>
-        <div class="content">
-
-
-          <select ng-model="newChart.client" ng-change="displayProfile(account)">
-            <optGroup ng-repeat="webPropertySummary in account.webProperties" label="Property: {{webPropertySummary.name}}">
-              <option ng-repeat="profile in webPropertySummary.profiles" value="ga:{{profile.id}}">Profile: {{profile.name}}<option>
-            </optGroup>
-          </select>
-        </div>
-
-      </div>
     </div>
   </div>
-
 </div>

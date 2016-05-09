@@ -1,4 +1,4 @@
-<div class="col-md-4 col-lg-4">
+<div class="col-md-6 col-lg-6">
   <div class="card">
     <div class="header">
         <h4 class="title">{{savedChart.chart.name}}</h4>
@@ -13,9 +13,10 @@
            dc-transition-duration="{{savedChart.chart.transitionDuration}}"
            dc-margins="{{savedChart.chart.margins}}"
            dc-dimension="{{savedChart.chart.dimension}}"
-           dc-group="[{{savedChart.chart.group}},'TEST']"
-           dc-stack="[{{savedChart.chart.stack}},'TEST 2']"
+           dc-group="[{{savedChart.chart.group}},'{{savedChart.chart.groupName}}']"
+           dc-stack="[{{savedChart.chart.stack}},'{{savedChart.chart.stackName}}']"
            dc-x="{{savedChart.chart.x}}"
+           dc-y="{{savedChart.chart.y}}"
            dc-round="{{savedChart.chart.round}}"
            dc-x-units="{{savedChart.chart.xUnits}}"
            dc-elastic-y="{{savedChart.chart.elasticY}}"

@@ -10,6 +10,7 @@
     <link rel="stylesheet" type="text/css" href="styles/demo.css">
     <link rel="stylesheet" type="text/css" href="styles/light-bootstrap-dashboard.css">
     <link rel="stylesheet" type="text/css" href="styles/pe-icon-7-stroke.css">
+    <link rel="stylesheet" type="text/css" href="styles/font-awesome.css">
 
     <script type="text/javascript" src="app/lodash.js"></script>
   	<script type="text/javascript" src="https://rawgithub.com/mbostock/d3/master/d3.js"></script>
@@ -51,13 +52,67 @@ is in the template -->
 <script type="text/javascript">
     var app = angular.module("app", ["angularDc","LocalStorageModule"]);
 
+    app.controller('columns', ['$scope', '$http', function($scope, $http) {
+
+      $scope.listColumns = function() {
+        $http.get('/listColumns')
+          .then(function(response) {
+            console.log(response.data);
+            $scope.listColumns = response.data;
+          })
+      }
+
+      $scope.setColumn = function(id, type) {
+        debugger;
+        if(type === "METRIC") {
+          if($scope.newChart.metrics === undefined) {
+            $scope.newChart.metrics = []
+          }
+          //$scope.columnQuery = id;
+          $scope.newChart.metrics.push(id);
+        } else {
+          if($scope.newChart.dimensions === undefined) {
+            $scope.newChart.dimensions = []
+          }
+          //$scope.columnQuery = id;
+          $scope.newChart.dimensions.push(id);
+        }
+
+        debugger;
+
+      }
+
+    }])
+
     app.controller('accounts', ['$scope', '$http', function($scope, $http) {
+      $scope.selectProfile = function(profile) {
+        debugger;
+        //$scope.newChart.client = profile;
+      }
+      $scope.toggleWebPropertyList = function() {
+        debugger;
+        $scope.webPropertyList = $scope.webPropertyList === false ? true: false;
+      }
+
+      $scope.findClient = function(e, client) {
+        console.log(e);
+        console.log(client);
+        console.log($scope.accounts)
+        console.log("Yes")
+      }
+
       $scope.listAccounts = function() {
+        $scope.overlayOff = false;
         $http.get('/listAccounts',$scope.newComponent)
           .then(function(response) {
             console.log(response.data);
             $scope.accounts = response.data;
           })
+      }
+
+      $scope.setProfile = function(name) {
+        $scope.query = name;
+        $scope.overlayOff = true;
       }
 
       $scope.displayProfile = function(account) {
@@ -71,43 +126,93 @@ is in the template -->
 
 		app.controller('testController', ['$scope','$http','localStorageService', function($scope, $http, localStorageService) {
 			$scope.init = function() {
-				debugger;
         $scope.savedCharts = [];
-				//localStorageService.set('test', '[{"ga":{"gaId":"ga:36850191","startDate":"60daysAgo","endDate":"yesterday","metrics":["ga:pageviews","ga:visitors","ga:bounces"],"dimensions":"ga:date"},"chart":{"chartType":"pieChart","chartGroup":"groupOne","width":"780","height":"480","innerRadius":"100","dimension":"dimension","group":"group","renderArea":true,"transitionDuration":"1000","margins":"{top: 30, right: 50, bottom: 25, left: 40}","stack":"bounces","mouseZoomable":"true","x":"d3.time.scale().domain([minDateReal, maxDateReal])","round":"d3.time.month.round","xUnits":"d3.time.months","elasticY":"true","renderHorizontalGridLines":"true","legend":"dc.legend().x(800).y(10).itemHeight(13).gap(5)","brushOn":"false","class":"dc-chart","displayDimension":"4","displayMetric":"1"}}]');
 			}
 
       $scope.buildCharts = function(data, additionalChart) {
 
+          /* Create data and parse in crossfilter */
 					var dataReal = data.data.rows;
 					var ndxReal = crossfilter(dataReal);
 					var parseDateReal = d3.time.format("%Y%m%d").parse;
 
+          /* If the first value is a string and can be parsed as a date, then parse it */
+          /* If date */
 					dataReal.forEach(function(d) {
-            if(typeof(d[0]) === "string") {
+            if(typeof(d[0]) === "string" && parseDateReal(d[0]) instanceof Date) {
 						    d[0] = parseDateReal(d[0]);
             } else {
-              console.log("Already a date");
+              console.log("Could not parse as a date, its either already a date or is not in the correct format");
             }
 					})
 
+          /* If the first value is a date already, transform the default response to long month */
 					dataReal.forEach(function(d) {
+            if(d[0] instanceof Date) {
 							var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 									d[4]=monthNames[d[0].getMonth()];
 									console.log(d[4])
+            }
 					});
 
-          $scope.dimension = ndxReal.dimension(function(d) {return d[parseInt(data.config.data.chart.displayDimension)]})
+          /* If year, month, day */
 
-          //displayMetric[0] is hard coded the first metric that comes back from GA
+
+
+
+
+          /* Can we write a metric/dimension rule generator that runs tests on incoming dimensions/metrics which subjects them to totalResults
+          Is this dimension/metric a: date, number, string, blah blah then write the new rule to JSON.*/
+
+
+
+
+
+          /* Here there be demons */
+
+          /* Create a base dimension based on the charts displayDimension attribute.
+          Question: What if you could choose multiple dimensions? - Does dc support this?
+          */
+          $scope.dimension = ndxReal.dimension(function(d) {
+            return d[parseInt(data.config.data.chart.displayDimension)]
+          })
+
+          /* Create a base group based on the previos dimension and a hard coded first metric that comes back from GA */
           $scope.group=$scope.dimension.group().reduceSum(function(d) {return d[parseInt(data.config.data.chart.displayMetric[0])];});
 
-          //This is stack information and should somehow be classified into a display attribute
-          $scope.pureDate = ndxReal.dimension(function(d) {return d[0];})
-          //Hard coded stack attribute... need to work out a way to make sense of this
-          $scope.stack=$scope.pureDate.group().reduceSum(function(d) {return d[parseInt(data.config.data.chart.displayMetric[1])];});
+          /* Creates a new dimension of a parsed date value from GA
+          Question: Could this be replaced with $scope.dimension? */
+          $scope.pureDate = ndxReal.dimension(function(d) {
+            return d[0];
+          })
 
+          /* Gets the minimum and maximum of a dates
+          Note: These can then be used in the chart definition
+          Note: What about where dimension is not a date or number, but a string like ga:medium, the .x attribute needs new formatting - See logic below */
+          /* If date */
           $scope.minDateReal = $scope.pureDate.bottom(1)[0][0];
 					$scope.maxDateReal = $scope.pureDate.top(1)[0][0];
+
+          /*If number ^^^ */
+
+          /* If string ^^^ */
+
+          /* Creates a new dimension of whatever is the first GA metric
+          Note: metrics == groups and are presented on the Y axis */
+          $scope.mainY = ndxReal.dimension(function(d) {
+            return d[1];
+          })
+
+          /* Gets the minimum and maximum of the first metric
+          Note: These can then be used in the chart definition
+          Question: Can dc support doubled up labelling of axis? */
+          $scope.minY = $scope.mainY.bottom(1000)[0][1];
+          $scope.maxY = $scope.mainY.top(1000)[0][1];
+
+          /* Creates the value to stack on top of the group */
+          $scope.stack = $scope.pureDate.group().reduceSum(function(d) {
+            return d[parseInt(data.config.data.chart.displayMetric[1])];
+          });
 
 
           //additionalChart is actually always true in this new set up so we may not need this condition. It just pushes the new chart config into the savedCharts array
@@ -129,7 +234,12 @@ is in the template -->
 				$scope.addNewComponent = function(newChartVal) {
 
           //creates a new component from the information provided in the form
-					$scope.newComponent = JSON.parse('{"ga":{"gaId": "' + newChartVal.client +'", "startDate" : "60daysAgo", "endDate" : "yesterday", "metrics" : ["' + newChartVal.metrics +'"], "dimensions" : "' + newChartVal.dimensions + '"}, "chart":{"name":"' + newChartVal.name + '","chartType": "' + newChartVal.type + '" , "chartGroup" : "groupTwo", "width" : "450", "height" : "280", "innerRadius" : "50", "dimension" : "dimension", "group" : "group", "renderArea" : true, "transitionDuration" : "1000", "margins" : "{top: 30, right: 50, bottom: 25, left: 40}", "stack" : "stack", "mouseZoomable" : "true", "x" : "d3.time.scale().domain([minDateReal, maxDateReal])", "round" : "d3.time.month.round", "xUnits" : "d3.time.months", "elasticY" : "true", "renderHorizontalGridLines" : "true", "legend" : "dc.legend().x(800).y(10).itemHeight(13).gap(5)", "brushOn" : "false", "class" : "dc-chart"}}');
+          //d3.time.scale().domain([minDateReal, maxDateReal]) changes to linear scale for testing, this needs generalising in the build chart phase but should be decided dynamically, maybe based on whether date exists? Maybe more general to cope with all possibilities
+          //d3.scale.linear().domain([minDateReal, maxDateReal])
+					$scope.newComponent = JSON.parse('{"ga":{"gaId": "' + newChartVal.client +'", "startDate" : "60daysAgo", "endDate" : "yesterday", "metrics" : ["' + newChartVal.metrics +'"], "dimensions" : "' + newChartVal.dimensions + '"}, "chart":{"name":"' + newChartVal.name + '","chartType": "' + newChartVal.type + '" , "chartGroup" : "groupTwo", "width" : "450", "height" : "280", "innerRadius" : "50", "dimension" : "dimension", "group" : "group", "groupName":"Hello", "renderArea" : true, "transitionDuration" : "1000", "margins" : "{top: 30, right: 50, bottom: 25, left: 40}", "stack" : "stack", "stackName":"World", "mouseZoomable" : "true", "x" : "d3.time.scale().domain([minDateReal, maxDateReal])","y" : "d3.scale.linear().domain([minY, maxY])", "round" : "d3.time.month.round", "xUnits" : "d3.time.months", "elasticY" : "true", "renderHorizontalGridLines" : "true", "legend" : "dc.legend().x(800).y(10).itemHeight(13).gap(5)", "brushOn" : "false", "class" : "dc-chart"}}');
+
+
+          debugger;
 
           //hits endpoint with fully configured object... waiting for response... (this request should be moved to a factory/service soon)
 					$http.post('/data',$scope.newComponent)
@@ -163,6 +273,7 @@ is in the template -->
           $scope.moreConfig.chart.displayDimension = newChartVal.displayDimension;
 
           var displayGroupLabel = "";
+          var displayDimensionLabel = "";
           //below doesnt label the correct way
           for(var i = 0; i < newChartVal.displayGroup.length; i++) {
             console.log(newChartVal.metrics[i])
@@ -172,10 +283,23 @@ is in the template -->
             } else {
               displayGroupLabel += newChartVal.metrics[i] + " Vs ";
             }
-          }
 
-          $scope.moreConfig.chart.yAxisLabel = "Y AXIS LABEL";
-          $scope.moreConfig.chart.xAxisLabel = displayGroupLabel;
+            if(i == newChartVal.displayDimension.length-1) {
+              displayDimensionLabel += newChartVal.dimensions[i];
+            } else {
+              displayDimensionLabel += newChartVal.dimensions[i] + " Vs ";
+            }
+
+            if(i == 0) {
+              $scope.moreConfig.chart.groupName = newChartVal.metrics[i];
+            } else {
+              $scope.moreConfig.chart.stackName = newChartVal.metrics[i];
+            }
+
+          }
+          debugger;
+          $scope.moreConfig.chart.yAxisLabel = displayGroupLabel;
+          $scope.moreConfig.chart.xAxisLabel = displayDimensionLabel;
           $scope.buildCharts($scope.newData, $scope.moreConfig);
         }
 

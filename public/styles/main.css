@@ -324,3 +324,83 @@ g.dc-legend-item.fadeout {
     pointer-events: all;
     cursor: pointer;
 }
+
+
+/* Custom styling */
+
+
+.upper {
+  text-transform: uppercase;
+  font-weight:bold;
+}
+
+.client, .property, .profile {
+  padding-bottom:10px;
+  border-bottom: 1px solid #fff;
+  display:block;
+}
+
+.client {
+  font-size:1.5em;
+}
+
+.property {
+  font-size:1.25em;
+}
+
+
+
+.profile {
+  font-size:1em;
+}
+
+@keyframes fadeBackgroundIn {
+    from {background-color: rgba(0,0,0,0);}
+    to {background-color: rgba(0,0,0,0.7);}
+}
+
+.overlay {
+  animation-name: fadeBackgroundIn;
+  animation-duration: 500ms;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 5;
+  background-color: rgba(0,0,0,0.7);
+}
+
+.overOverlay {
+  z-index:6;
+  position:relative;
+}
+.accounts ul {
+  padding-left:0;
+}
+.accounts ul li {
+  list-style-type:none;
+}
+
+.accounts p {
+  color:#939393;
+}
+
+.accounts p.profile-container {
+  color:#d3d3d3;
+}
+
+.accounts p.profile-container .fa {
+  float: right;
+  margin-top: 4px;
+  margin-right: 6px;
+}
+
+.accounts p .profile-name {
+  cursor:pointer;
+}
+
+.accounts p .profile-name:hover {
+  color:#fff;
+}

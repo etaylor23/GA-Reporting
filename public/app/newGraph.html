@@ -1,67 +1,142 @@
-<div>
-  <form ng-submit="addNewComponent(newChart)" >
-    <h2>Component Name</h2>
-    <input type="text" ng-model="newChart.name" /><br />
+<div class="col-md-12">
+  <div class="card">
 
-    <br />
+    <div class="content">
+      <form ng-submit="addNewComponent(newChart)" >
+        <div class="row">
 
-    <div ng-controller="accounts" class="container-fluid">
-      <div class="row">
-        <div accounts></div>
-      </div>
+
+
+
+          <div ng-controller="accounts" class="container-fluid">
+            <div class="row">
+              <div accounts></div>
+            </div>
+          </div>
+
+
+
+
+          <div class="col-md-6">
+              <div class="form-group">
+                  <label>Chart Name</label>
+                  <input class="form-control" type="text" ng-model="newChart.name" />
+              </div>
+          </div>
+
+
+          <div class="col-md-6">
+              <div class="form-group">
+                  <label>Chart Type</label>
+                  <select class="form-control" name="type" id="type" ng-model="newChart.type">
+                    <option value="pieChart">Pie Chart</option>
+                    <option value="lineChart">Line Chart</option>
+                  </select>
+              </div>
+          </div>
+
+          <div ng-controller="columns" ng-init="listColumns()">
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Metrics</label>
+                    <!--<select class="form-control" multiple="multiple" name="metrics" id="metrics" ng-model="newChart.metrics">
+                      <option value="ga:pageviews">Page Views</option>
+                      <option value="ga:visitors">Visitors</option>
+                      <option value="ga:bounces">Bounces</option>
+                    </select>-->
+
+                    <div ng-if="columnQuery && overlayOff == false" class="overlay"></div>
+
+                    <div class="overOverlay">
+                      <input class="form-control" type="text" ng-keyup="overlayOff = false" ng-model="newChart.newMetric" placeholder="Start typing..." />
+
+                      <div ng-model="newChart.metrics" ng-if="newChart.metrics" ng-repeat="metric in newChart.metrics">
+                        {{metric}}
+                      </div>
+                      <ul ng-if="newChart.newMetric && overlayOff == false">
+                        <li ng-if="column.attributes.type=='METRIC' && column.attributes.status !== 'DEPRECATED'" class="col-md-4" ng-repeat="column in listColumns | filter:newChart.newMetric">
+                          <p class="profile-container" ng-model="newChart.newMetric" ng-click="setColumn(column.id, column.attributes.type)">
+                            <span class="profile upper">{{column.attributes.type}}</span>
+                            <span class="profile-name">{{column.attributes.uiName}}</span>
+
+                            <span class="fa fa-thumbs-up"></span>
+                          </p>
+                        </li>
+                      </ul>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="form-group">
+                    <label>Dimensions</label>
+                    <!--<select class="form-control" multiple="multiple" name="metrics" id="metrics" ng-model="newChart.dimensions">
+                      <option value="">--- EMPTY ---</option>
+                      <option value="ga:date">Date</option>
+                    </select>-->
+
+
+                    <div ng-if="columnQuery && overlayOff == false" class="overlay"></div>
+
+                    <div class="overOverlay">
+                      <input class="form-control" type="text" ng-keyup="overlayOff = false" ng-model="newChart.newDimension" placeholder="Start typing..." />
+
+                      <div ng-model="newChart.dimensions" ng-if="newChart.dimensions" ng-repeat="metric in newChart.dimensions">
+                        {{metric}}
+                      </div>
+                      <ul ng-if="newChart.newDimension && overlayOff == false">
+                        <li ng-if="column.attributes.type=='DIMENSION' && column.attributes.status !== 'DEPRECATED'" class="col-md-4" ng-repeat="column in listColumns | filter:newChart.newDimension">
+                          <p class="profile-container" ng-model="newChart.newDimension" ng-click="setColumn(column.id, column.attributes.type)">
+                            <span class="profile upper">{{column.attributes.type}}</span>
+                            <span class="profile-name">{{column.attributes.uiName}}</span>
+
+                            <span class="fa fa-thumbs-up"></span>
+                          </p>
+                        </li>
+                      </ul>
+                    </div>
+
+                </div>
+            </div>
+          </div>
+
+
+
+
+
+
+
+          <input type="submit" id="submit" value="Submit" />
+
+
+
+
+        </form>
+
+        <form ng-if="displayChart == true"  ng-submit="configureDisplay(newChart)">
+
+            <div>
+              <h3>Display Metrics By</h3>
+              <select name="group" id="group" ng-model="newChart.displayGroup" multiple>
+                <option ng-repeat="metric in displayMetric track by $index" value="{{metric.position}}">{{metric.name}}</option>
+              </select>
+
+
+              <h3>Display Dimensions By</h3>
+              <select name="groupDimensions" id="groupDimensions" ng-model="newChart.displayDimension">
+                <option ng-repeat="dimension in displayDimension track by $index" value="{{dimension.position}}">{{dimension.name}}</option>
+              </select>
+            </div>
+
+            <input type="submit" id="submit" value="Submit" />
+
+
+
+          </div>
+      </form>
     </div>
 
 
-    <br />
-
-    <h2>Chart Type</h2>
-    <select name="type" id="type" ng-model="newChart.type">
-      <option value="pieChart">Pie Chart</option>
-      <option value="lineChart">Line Chart</option>
-    </select>
-
-    <br />
-
-    <h2>Metrics</h2>
-    <select multiple="multiple" name="metrics" id="metrics" ng-model="newChart.metrics">
-      <option value="ga:pageviews">Page Views</option>
-      <option value="ga:visitors">Visitors</option>
-      <option value="ga:bounces">Bounces</option>
-    </select>
-
-    <br />
-
-    <h2>Dimensions</h2>
-    <select multiple="multiple" name="metrics" id="metrics" ng-model="newChart.dimensions">
-      <option value="">--- EMPTY ---</option>
-      <option value="ga:date">Date</option>
-    </select>
-
-    <input type="submit" id="submit" value="Submit" />
-
-
-
-
-  </form>
-
-  <form ng-if="displayChart == true"  ng-submit="configureDisplay(newChart)">
-
-      <div>
-        <h3>Display Metrics By</h3>
-        <select name="group" id="group" ng-model="newChart.displayGroup" multiple>
-          <option ng-repeat="metric in displayMetric track by $index" value="{{metric.position}}">{{metric.name}}</option>
-        </select>
-
-
-        <h3>Display Dimensions By</h3>
-        <select name="groupDimensions" id="groupDimensions" ng-model="newChart.displayDimension">
-          <option ng-repeat="dimension in displayDimension track by $index" value="{{dimension.position}}">{{dimension.name}}</option>
-        </select>
-      </div>
-
-      <input type="submit" id="submit" value="Submit" />
-
-
-  </form>
-
+  </div>
 </div>
